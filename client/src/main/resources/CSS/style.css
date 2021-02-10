@@ -1,0 +1,57 @@
+.root {
+-fx-font-size: 16;
+-fx-background-color: #17212B;
+}
+
+.button {
+    -fx-background-color: #17212B;
+    -fx-text-fill: white;
+}
+
+#buttonAvatar {
+    -fx-background-image: url("../images/avatar.png");
+    -fx-background-size: 60px 60px;
+}
+
+#ButtonSettings {
+    -fx-background-image: url("../images/settings_hover.png");
+    -fx-background-size: 60px 60px;
+}
+#ButtonSettings:hover{
+    -fx-background-image: url("../images/settings.png");
+    -fx-background-size: 60px 60px;
+}
+
+#buttonBio {
+    -fx-text-align: left;
+    -fx-text-fill: white;
+    -fx-font-size: 25;
+    -fx-font-weight: bold;
+}
+#buttonBio: hover{
+}
+
+#textArea {
+    -fx-background-color: #0E1621;
+    -fx-control-inner-background: #0E1621;
+    -fx-font-size: 14;
+    -fx-font-weight: normal;
+    -fx-text-fill: white;
+}
+
+#textField {
+    -fx-background-color: #17212B;
+    -fx-control-inner-background: #17212B;
+    -fx-font-size: 20;
+    -fx-font-weight: normal;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #c9c9c9;
+}
+#ButtonSend {
+    -fx-background-image: url("../images/send_hover.png");
+    -fx-background-size: 40px 40px;
+}
+#ButtonSend: hover {
+    -fx-background-image: url("../images/send.png");
+    -fx-background-size: 40px 40px;
+}

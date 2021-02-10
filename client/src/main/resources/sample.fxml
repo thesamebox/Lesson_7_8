@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import java.net.URL?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+            fx:controller="client.Controller">
+    <stylesheets>
+        <URL value="@/CSS/style.css" />
+    </stylesheets>
+
+<!--    <Button fx:id="buttonAvatar"-->
+<!--            text="interlocutor's info"-->
+<!--            prefHeight="60"-->
+<!--            prefWidth="60"-->
+<!--            AnchorPane.leftAnchor="0.0"-->
+<!--            AnchorPane.rightAnchor="60.0"/>-->
+
+<!--    <Button fx:id="buttonBio"-->
+<!--            text="Drunk Cat"-->
+<!--            prefHeight="60"-->
+<!--            prefWidth="-Infinity"-->
+<!--            AnchorPane.leftAnchor="60.0"-->
+<!--            AnchorPane.rightAnchor="60.0"/>-->
+
+<!--    <Button fx:id="ButtonSettings"-->
+<!--            text=" "-->
+<!--            AnchorPane.rightAnchor="0.0"-->
+<!--            prefHeight="60"-->
+<!--            prefWidth="60"/>-->
+
+    <HBox fx:id="authPanel">
+        <TextField fx:id="loginField"
+                   promptText="Your login"
+                   HBox.hgrow="ALWAYS"
+                   prefHeight="40"/>
+        <PasswordField fx:id="passwordField"
+                       promptText="password"
+                       HBox.hgrow="ALWAYS"
+                       onAction="#tryToAuthorization"
+                       prefHeight="40"/>
+        <Button fx:id="authorize"
+                text="Auth"
+                onAction="#tryToAuthorization"
+                prefWidth="60"
+                prefHeight="40"
+        minWidth="60"/>
+    </HBox>
+
+    <TextArea fx:id="textArea"
+              VBox.vgrow="ALWAYS"
+              editable="false"/>
+
+    <HBox fx:id="messagePanel"
+            visible="false"
+            managed="false">
+        <TextField fx:id="textField"
+                   onAction="#clickBtnSend"
+                   promptText="Input your message"/>
+
+        <Button fx:id="ButtonSend"
+                text=" "
+                onAction="#clickBtnSend"
+                prefWidth="40"
+                prefHeight="40"/>
+    </HBox>
+
+</VBox>
