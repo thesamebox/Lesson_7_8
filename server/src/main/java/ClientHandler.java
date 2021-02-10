@@ -13,6 +13,7 @@ public class ClientHandler {
     private DataOutputStream out;
 
     private String nickname;
+    private String login;
 
     public ClientHandler(server server, Socket socket) {
         try {
@@ -35,14 +36,31 @@ public class ClientHandler {
                             if (tryToAuth.startsWith(Command.AUTH)) {
                                 String[] token = tryToAuth.split("\\s");
                                 String newNick = server.getAuthService().GetNicknameByLogAndPass(token[1], token[2]);
+                                login = token[1];
                                 if (newNick != null) {
-                                    nickname = newNick;
-                                    sendMessage(Command.AUTH_OK + " " + nickname);
-                                    server.subscribe(this);
-                                    server.broadCastMessage(this, " connected");
-                                    break;
+                                    if (!server.isLoginAuthorized(login)) {
+                                        nickname = newNick;
+                                        sendMessage(Command.AUTH_OK + " " + nickname);
+                                        server.subscribe(this);
+                                        server.broadCastMessage(this, " connected");
+                                        break;
+                                    } else {
+                                        sendMessage("The login has been authorized");
+                                    }
                                 } else {
                                     sendMessage("Wrong login / password");
+                                }
+                            }
+                            if (tryToAuth.startsWith(Command.REGISTRATION)) {
+                                String[] token = tryToAuth.split("\\s");
+                                if (token.length < 4) {
+                                    continue;
+                                }
+                                boolean regSuccessful = server.getAuthService().registration(token[1], token[2], token[3]);
+                                if (regSuccessful) {
+                                    sendMessage(Command.REG_OK);
+                                } else {
+                                    sendMessage(Command.REG_FAIl);
                                 }
                             }
                         }
@@ -67,11 +85,13 @@ public class ClientHandler {
                             server.broadCastMessage(this, clientMessage);
                         }
                     }
+                } catch (RuntimeException e) {
+                    System.out.println(e.getMessage());
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
-                    server.unsubscribe(this);
                     server.broadCastMessage(this," disconnected");
+                    server.unsubscribe(this);
                     try {
                         socket.close();
                     } catch (IOException e) {
@@ -97,4 +117,7 @@ public class ClientHandler {
         return nickname;
     }
 
+    public String getLogin() {
+        return login;
+    }
 }

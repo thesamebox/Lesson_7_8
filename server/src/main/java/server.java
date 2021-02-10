@@ -1,3 +1,4 @@
+import commands.Command;
 import org.w3c.dom.ls.LSOutput;
 
 import java.io.DataInputStream;
@@ -57,13 +58,35 @@ public class server {
 
     public void subscribe(ClientHandler clientHandler) {
         clients.add(clientHandler);
+        broadCastClientList();
     }
 
     public void unsubscribe(ClientHandler clientHandler) {
         clients.remove(clientHandler);
+        broadCastClientList();
     }
 
     public AuthService getAuthService() {
         return authService;
+    }
+
+    public boolean isLoginAuthorized(String login) {
+        for (ClientHandler client : clients) {
+            if (client.getLogin().equals(login)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void broadCastClientList() {
+        StringBuilder nameLists = new StringBuilder(Command.CLIENT_LIST);
+        for (ClientHandler client : clients) {
+            nameLists.append(" ").append(client.getNickname());
+        }
+        String list = nameLists.toString();
+        for (ClientHandler client : clients) {
+            client.sendMessage(list);
+        }
     }
 }

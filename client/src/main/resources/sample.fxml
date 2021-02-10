@@ -47,11 +47,24 @@
                 prefWidth="60"
                 prefHeight="40"
         minWidth="60"/>
+        <Button fx:id="reg"
+                text="Reg"
+                onAction="#tryToRegistration"
+                prefWidth="60"
+                prefHeight="40"
+                minWidth="60"/>
     </HBox>
-
-    <TextArea fx:id="textArea"
-              VBox.vgrow="ALWAYS"
-              editable="false"/>
+    <HBox VBox.vgrow="ALWAYS">
+        <TextArea fx:id="textArea"
+                  HBox.hgrow="ALWAYS"
+                  editable="false"
+                  wrapText="true"/>
+        <ListView fx:id="clientList"
+                  minWidth="120"
+                  visible="false"
+                  managed="false"
+                  onMouseReleased="#clientListClick"/>
+    </HBox>
 
     <HBox fx:id="messagePanel"
             visible="false"
