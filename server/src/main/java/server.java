@@ -40,6 +40,21 @@ public class server {
         }
     }
 
+    public void privateMessage(ClientHandler senderNickname, String receiverNickname, String message) {
+        String privateMessageFrom = String.format("Whisper from [ %s ] : %s", senderNickname.getNickname(), message);
+        String privateMessageTo = String.format("Whisper to [ %s ] : %s", receiverNickname, message);
+        for (ClientHandler client : clients) {
+            if (client.getNickname().equals(receiverNickname)) {
+                client.sendMessage(privateMessageFrom);
+                if (!client.equals(senderNickname)) {
+                    senderNickname.sendMessage(privateMessageTo);
+                }
+                return;
+            }
+        }
+        senderNickname.sendMessage("User \"" + receiverNickname + "\" is not found");
+    }
+
     public void subscribe(ClientHandler clientHandler) {
         clients.add(clientHandler);
     }

@@ -55,6 +55,14 @@ public class ClientHandler {
                                 out.writeUTF(Command.END);
                                 break;
                             }
+                            if (clientMessage.startsWith(Command.WHISPER)) {
+                                String[] token = clientMessage.split("\\s", 3);
+                                if (token.length < 3) {
+                                    sendMessage("Input the command like  \"/w nickname p_message\"");
+                                } else {
+                                    server.privateMessage(this, token[1], token[2]);
+                                }
+                            }
                         } else {
                             server.broadCastMessage(this, clientMessage);
                         }
