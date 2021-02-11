@@ -1,3 +1,4 @@
+import commands.Command;
 import org.w3c.dom.ls.LSOutput;
 
 import java.io.DataInputStream;
@@ -40,15 +41,52 @@ public class server {
         }
     }
 
+    public void privateMessage(ClientHandler senderNickname, String receiverNickname, String message) {
+        String privateMessageFrom = String.format("Whisper from [ %s ] : %s", senderNickname.getNickname(), message);
+        String privateMessageTo = String.format("Whisper to [ %s ] : %s", receiverNickname, message);
+        for (ClientHandler client : clients) {
+            if (client.getNickname().equals(receiverNickname)) {
+                client.sendMessage(privateMessageFrom);
+                if (!client.equals(senderNickname)) {
+                    senderNickname.sendMessage(privateMessageTo);
+                }
+                return;
+            }
+        }
+        senderNickname.sendMessage("User \"" + receiverNickname + "\" is not found");
+    }
+
     public void subscribe(ClientHandler clientHandler) {
         clients.add(clientHandler);
+        broadCastClientList();
     }
 
     public void unsubscribe(ClientHandler clientHandler) {
         clients.remove(clientHandler);
+        broadCastClientList();
     }
 
     public AuthService getAuthService() {
         return authService;
+    }
+
+    public boolean isLoginAuthorized(String login) {
+        for (ClientHandler client : clients) {
+            if (client.getLogin().equals(login)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void broadCastClientList() {
+        StringBuilder nameLists = new StringBuilder(Command.CLIENT_LIST);
+        for (ClientHandler client : clients) {
+            nameLists.append(" ").append(client.getNickname());
+        }
+        String list = nameLists.toString();
+        for (ClientHandler client : clients) {
+            client.sendMessage(list);
+        }
     }
 }
