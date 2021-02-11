@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 public class ClientHandler {
     private server server;
@@ -15,6 +16,8 @@ public class ClientHandler {
     private String nickname;
     private String login;
 
+    private final int TIME_OUT = 5000;
+
     public ClientHandler(server server, Socket socket) {
         try {
             this.server = server;
@@ -24,6 +27,7 @@ public class ClientHandler {
 
             new Thread(()-> {
                 try {
+                    socket.setSoTimeout(TIME_OUT);
                     //логгирование
                     while (true) {
                         String tryToAuth = in.readUTF();
@@ -43,6 +47,7 @@ public class ClientHandler {
                                         sendMessage(Command.AUTH_OK + " " + nickname);
                                         server.subscribe(this);
                                         server.broadCastMessage(this, " connected");
+                                        socket.setSoTimeout(0);
                                         break;
                                     } else {
                                         sendMessage("The login has been authorized");
@@ -84,6 +89,13 @@ public class ClientHandler {
                         } else {
                             server.broadCastMessage(this, clientMessage);
                         }
+                    }
+                } catch (SocketTimeoutException e) {
+                    System.out.println("Client was disconnected by timeout");
+                    try {
+                        out.writeUTF(Command.END);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
                     }
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
