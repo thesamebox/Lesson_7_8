@@ -6,6 +6,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -15,12 +16,12 @@ public class server {
     private ServerSocket server;
     private Socket socket;
     private List<ClientHandler> clients;
-    private AuthService authService;
+    private AuthServiceSQLite authService;
 
 
-    public server() {
+    public server() throws SQLException, ClassNotFoundException {
         clients = new CopyOnWriteArrayList<>();
-        authService = new SimpleAuthService();
+        authService = new SimpleAuthServiceSQLite();
         try {
             server = new ServerSocket(PORT);
             System.out.println("Server started.");
@@ -66,7 +67,7 @@ public class server {
         broadCastClientList();
     }
 
-    public AuthService getAuthService() {
+    public AuthServiceSQLite getAuthService() {
         return authService;
     }
 
