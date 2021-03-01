@@ -119,8 +119,6 @@ public class Controller implements Initializable {
                                 regController.resultOfTryToReg(false);
 
                             }
-
-
                         } else {
                             textArea.appendText(clientMessage + "\n");
                         }

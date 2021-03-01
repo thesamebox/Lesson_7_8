@@ -80,7 +80,7 @@ public class ClientHandler {
                                 out.writeUTF(Command.END);
                                 break;
                             }
-                            if (clientMessage.equals(Command.NEW_NICK)) {
+                            if (clientMessage.startsWith(Command.NEW_NICK)) {
                                 String[] token = clientMessage.split("\\s", 3);
                                 if (token.length < 3) {
                                     sendMessage("Input the command like  \"/newNick yourNewNickname yourPassword\"");
