@@ -4,13 +4,16 @@ import commands.Command;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -21,6 +24,8 @@ import java.util.ResourceBundle;
 
 
 public class Controller implements Initializable {
+    @FXML
+    private ListView<String> clientList;
     @FXML
     private HBox authPanel;
     @FXML
@@ -39,6 +44,8 @@ public class Controller implements Initializable {
     private TextField textField;
 
     private Stage stage;
+    private Stage regStage;
+    private RegController regController;
 
     private static Socket socket;
     private static final int PORT = 8889;
@@ -57,6 +64,8 @@ public class Controller implements Initializable {
         messagePanel.setManaged(isAuth);
         authPanel.setVisible(!isAuth);
         authPanel.setManaged(!isAuth);
+        clientList.setVisible(isAuth);
+        clientList.setManaged(isAuth);
         if (!isAuth) {
             nickname = "";
         }
@@ -66,9 +75,17 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//        Platform.runLater(() -> textField.requestFocus());
         Platform.runLater(()-> {
             stage = (Stage) textField.getScene().getWindow();
+            stage.setOnCloseRequest(windowEvent -> {
+                if (socket != null && !socket.isClosed()) {
+                    try {
+                        out.writeUTF(Command.END);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         });
         setAuth(false);
 
@@ -95,7 +112,13 @@ public class Controller implements Initializable {
                                 setAuth(true);
                                 break;
                             }
+                            if (clientMessage.equals(Command.REG_OK)) {
+                                regController.resultOfTryToReg(true);
+                            }
+                            if (clientMessage.equals(Command.REG_FAIl)) {
+                                regController.resultOfTryToReg(false);
 
+                            }
                         } else {
                             textArea.appendText(clientMessage + "\n");
                         }
@@ -103,12 +126,26 @@ public class Controller implements Initializable {
                     // общение
                     while (true) {
                         String clientMessage = in.readUTF();
-                        if (clientMessage.equals(Command.END)) {
-                            System.out.println("Disconnected");
-                            break;
+                        if (clientMessage.startsWith("/")) {
+                            if (clientMessage.equals(Command.END)) {
+                                System.out.println("Disconnected");
+                                break;
+                            }
+                            if (clientMessage.startsWith(Command.CLIENT_LIST)) {
+                                String[] token = clientMessage.split("\\s");
+                                Platform.runLater(()-> {
+                                    clientList.getItems().clear();
+                                    for (int i = 1; i < token.length; i++) {
+                                        clientList.getItems().add(token[i]);
+                                    }
+                                });
+                            }
+                        } else {
+                            textArea.appendText(clientMessage + "\n");
                         }
-                        textArea.appendText(clientMessage + "\n");
                     }
+                } catch (RuntimeException e) {
+                    System.out.println(e.getMessage());
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
@@ -163,5 +200,47 @@ public class Controller implements Initializable {
         });
     }
 
+    @FXML
+    public void clientListClick(MouseEvent mouseEvent) {
+        System.out.println(clientList.getSelectionModel().getSelectedItem());
+        String targetName = String.format("%s %s ", Command.WHISPER, clientList.getSelectionModel().getSelectedItem());
+        textField.setText(targetName);
+    }
 
+    @FXML
+    public void tryToRegistration(ActionEvent actionEvent) {
+        if (regStage == null) {
+            createRegWindow();
+        }
+        regStage.show();
+    }
+
+    private void createRegWindow() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/reg.fxml"));
+            Parent root = fxmlLoader.load();
+            regController = fxmlLoader.getController();
+            regController.setController(this);
+            regStage = new Stage();
+            regStage.setTitle("ChatMe registration");
+            regStage.setScene(new Scene(root, 300, 400));
+
+            regStage.initModality(Modality.APPLICATION_MODAL);
+            regStage.initStyle(StageStyle.UTILITY);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void tryToReg(String login, String password, String nickname) {
+        String registrationData = String.format("%s %s %s %s", Command.REGISTRATION, login, password, nickname);
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+        try {
+            out.writeUTF(registrationData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
