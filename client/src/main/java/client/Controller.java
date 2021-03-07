@@ -15,12 +15,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.util.ResourceBundle;
+import java.nio.Buffer;
+import java.util.*;
 
 
 public class Controller implements Initializable {
@@ -57,6 +56,9 @@ public class Controller implements Initializable {
     private boolean isAuth;
 
     private String nickname;
+
+    private String fileHistoryName = makeHistoryFileName(nickname);
+
 
     private void setAuth(boolean auth) {
         this.isAuth = auth;
@@ -110,6 +112,7 @@ public class Controller implements Initializable {
                             if (clientMessage.startsWith(Command.AUTH_OK)) {
                                 nickname = clientMessage.split("\\s")[1];
                                 setAuth(true);
+                                loadChatHistory();
                                 break;
                             }
                             if (clientMessage.equals(Command.REG_OK)) {
@@ -142,6 +145,7 @@ public class Controller implements Initializable {
                             }
                         } else {
                             textArea.appendText(clientMessage + "\n");
+                            saveChatHistory(clientMessage);
                         }
                     }
                 } catch (RuntimeException e) {
@@ -242,5 +246,38 @@ public class Controller implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String makeHistoryFileName(String nickname) {
+        File historyFile = new File("..\\", nickname + ".txt");
+        if (!historyFile.exists()) {
+            return nickname + ".txt";
+        }
+        return null;
+    }
+
+    public void saveChatHistory(String message) throws IOException {
+        PrintWriter outputStream = new PrintWriter(new FileWriter(makeHistoryFileName(nickname), true));
+        outputStream.println(message);
+    }
+
+    public void loadChatHistory() throws IOException {
+        File historyFile = new File("..\\", fileHistoryName);
+        if (!historyFile.exists()) return;
+        Scanner scanner = new Scanner(historyFile);
+        int lines = 0;
+        while (scanner.hasNextLine()) {
+            lines++;
+            scanner.nextLine();
+        }
+        scanner.close();
+
+        int start = lines - 100;
+        if(start < 0) start = 0;
+        BufferedReader reader = new BufferedReader(new FileReader(historyFile));
+        for (int i = start; i >= 0; i--) {
+            textArea.appendText(reader.readLine());
+        }
+        reader.close();
     }
 }

@@ -71,6 +71,7 @@
             managed="false">
         <TextField fx:id="textField"
                    onAction="#clickBtnSend"
+                   HBox.hgrow="ALWAYS"
                    promptText="Input your message"/>
 
         <Button fx:id="ButtonSend"

@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class ClientHandler {
     private server server;
@@ -102,7 +106,7 @@ public class ClientHandler {
                                 }
                             }
                         } else {
-                            server.broadCastMessage(this, clientMessage);
+                            server.broadCastMessage(this, checkCensure(clientMessage));
                         }
                     }
                 } catch (SocketTimeoutException e) {
@@ -114,11 +118,7 @@ public class ClientHandler {
                     }
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                } catch (ClassNotFoundException e) {
+                } catch (IOException | SQLException | ClassNotFoundException e) {
                     e.printStackTrace();
                 } finally {
                     server.broadCastMessage(this," disconnected");
@@ -151,5 +151,33 @@ public class ClientHandler {
 
     public String getLogin() {
         return login;
+    }
+
+    public String checkCensure(String message) {
+        Map<String, String> censure = new HashMap<>();
+        String finalString = "";
+
+        censure.put("спб", "СПб");
+        censure.put("москва", "Москва");
+        censure.put("урод", "редиска");
+
+        String[] token = message.split("\\s");
+        Set entries = censure.entrySet();
+        Iterator iterator = entries.iterator();
+        while(iterator.hasNext()) {
+            Map.Entry entry =(Map.Entry) iterator.next();
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            for (String s : token) {
+                if (s.equals(key)) {
+                    s = (String) value;
+                }
+            }
+        }
+        for (String s : token) {
+            finalString = finalString + " " + s;
+        }
+
+        return finalString;
     }
 }
