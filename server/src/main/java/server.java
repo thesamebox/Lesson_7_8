@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class server {
@@ -17,21 +19,26 @@ public class server {
     private Socket socket;
     private List<ClientHandler> clients;
     private AuthServiceSQLite authService;
+    private ExecutorService executorService;
+    private final int ThreadsPool = 50;
 
 
     public server() throws SQLException, ClassNotFoundException {
         clients = new CopyOnWriteArrayList<>();
         authService = new SimpleAuthServiceSQLite();
         try {
+            executorService = Executors.newFixedThreadPool(ThreadsPool);
             server = new ServerSocket(PORT);
             System.out.println("Server started.");
             while (true) {
                 socket = server.accept();
                 System.out.println("Client connected" + socket.getRemoteSocketAddress());
-                new ClientHandler(this, socket);
+                executorService.execute(new ClientHandler(this, socket));
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            executorService.shutdown();
         }
     }
 
