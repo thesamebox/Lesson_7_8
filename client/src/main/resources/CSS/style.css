@@ -39,6 +39,13 @@
     -fx-text-fill: white;
 }
 
+#clientList {
+    -fx-background-color: #17212B;
+    -fx-font-size: 14;
+    -fx-font-weight: normal;
+    -fx-text-fill: white;
+}
+
 #textField {
     -fx-background-color: #17212B;
     -fx-control-inner-background: #17212B;
