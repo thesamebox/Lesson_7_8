@@ -10,8 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.*;
 
-public class ClientHandler {
+public class ClientHandler implements Runnable {
     private server server;
     private Socket socket;
 
@@ -22,6 +23,8 @@ public class ClientHandler {
     private String login;
 
     private final int TIME_OUT = 120000;
+
+    private final Logger logger = Logger.getLogger(server.class.getName());
 
     public ClientHandler(server server, Socket socket) {
         try {
@@ -34,12 +37,16 @@ public class ClientHandler {
                 try {
                     socket.setSoTimeout(TIME_OUT);
                     server.getAuthService().setConnection();
+                    Handler h = new FileHandler("Chat_log.log");
+                    h.setFormatter(new SimpleFormatter());
+                    logger.addHandler(h);
                     //логгирование
                     while (true) {
                         String tryToAuth = in.readUTF();
                         if (tryToAuth.startsWith("/")) {
                             if (tryToAuth.equals(Command.END)) {
-                                System.out.println("client was disconnected");
+                                logger.log(Level.FINE, login + " disconnected");
+//                                System.out.println("client was disconnected");
                                 out.writeUTF(Command.END);
                                 throw new RuntimeException("server disconnected us");
                             }
@@ -54,6 +61,8 @@ public class ClientHandler {
                                         server.subscribe(this);
                                         server.broadCastMessage(this, " connected");
                                         socket.setSoTimeout(0);
+                                        logger.log(Level.FINE, login + " Authorised");
+
                                         break;
                                     } else {
                                         sendMessage("The login has been authorized");
@@ -70,6 +79,8 @@ public class ClientHandler {
                                 boolean regSuccessful = server.getAuthService().registration(token[1], token[2], token[3]);
                                 if (regSuccessful) {
                                     sendMessage(Command.REG_OK);
+                                    logger.log(Level.FINE, login + " have been registered successfully");
+
                                 } else {
                                     sendMessage(Command.REG_FAIl);
                                 }
@@ -92,6 +103,8 @@ public class ClientHandler {
                                     boolean changeSuccessful = server.getAuthService().changeNickName(this.login, token[1], token[2]);
                                     if (changeSuccessful) {
                                         sendMessage("You've change your nickname from " + this.nickname + " to " + token[1]);
+                                        logger.log(Level.FINE, "Client changed his nickname from " + nickname + " to " + token[1]);
+
                                     } else {
                                         sendMessage("Something went wrong");
                                     }
@@ -110,7 +123,8 @@ public class ClientHandler {
                         }
                     }
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Client was disconnected by timeout");
+                    logger.log(Level.WARNING, "Client was disconnected by timeout ");
+//                    System.out.println("Client was disconnected by timeout");
                     try {
                         out.writeUTF(Command.END);
                     } catch (IOException ex) {
@@ -128,11 +142,15 @@ public class ClientHandler {
                         socket.close();
                     } catch (IOException | SQLException e) {
                         e.printStackTrace();
+                        logger.log(Level.SEVERE, "hz",e);
+
                     }
                 }
             }).start();
         } catch (IOException e) {
             e.printStackTrace();
+            logger.log(Level.SEVERE, "hz", e);
+
         }
 
     }
@@ -179,5 +197,10 @@ public class ClientHandler {
         }
 
         return finalString;
+    }
+
+    @Override
+    public void run() {
+
     }
 }
